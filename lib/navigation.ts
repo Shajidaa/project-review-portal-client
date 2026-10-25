@@ -117,8 +117,7 @@ export const ROLE_NAVIGATION: Record<ActiveRole, NavItem[]> = {
       href: "/dashboard/admin/users",
       description: "Manage students, mentors, permissions, and roles",
       icon: Users2,
-    },
-  ],
+    },],
 }
 
 export interface QuickSearchItem {
