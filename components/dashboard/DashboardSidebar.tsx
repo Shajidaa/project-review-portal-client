@@ -29,11 +29,23 @@ const ROLE_DOT: Record<UserRole, string> = {
     ADMIN: "bg-amber-500",
 }
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ mobileOpen, onMobileClose }: {
+    mobileOpen: boolean
+    onMobileClose: () => void
+}) {
     const { user, logout } = useAuth()
     const pathname = usePathname()
     const router = useRouter()
     const [collapsed, setCollapsed] = React.useState(false)
+
+    // Close mobile sidebar on route change
+    const prevPathname = React.useRef(pathname)
+    React.useEffect(() => {
+        if (pathname !== prevPathname.current) {
+            prevPathname.current = pathname
+            onMobileClose()
+        }
+    }, [pathname, onMobileClose])
 
     if (!user) return null
 
@@ -50,8 +62,14 @@ export function DashboardSidebar() {
     return (
         <aside
             className={cn(
+                // Desktop: always visible, collapsible
                 "relative flex flex-col h-full border-r border-border bg-card transition-all duration-300 ease-in-out",
-                collapsed ? "w-[68px]" : "w-[240px]"
+                // Desktop width
+                "hidden md:flex",
+                collapsed ? "w-[68px]" : "w-[240px]",
+                // Mobile: fixed slide-over drawer
+                "max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:w-[240px]",
+                mobileOpen ? "max-md:flex max-md:translate-x-0" : "max-md:hidden max-md:-translate-x-full",
             )}
         >
             {/* ── Collapse Toggle ── */}

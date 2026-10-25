@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import { usePathname } from "next/navigation"
-import { Bell, Search } from "lucide-react"
+import { Menu } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { ThemeToggle } from "@/components/navbar/ThemeToggle"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,7 +31,7 @@ const ROLE_BG: Record<UserRole, string> = {
     ADMIN: "bg-amber-500/10",
 }
 
-export function DashboardNavbar() {
+export function DashboardNavbar({ onMenuClick }: { onMenuClick: () => void }) {
     const { user, logout } = useAuth()
     const pathname = usePathname()
     const router = useRouter()
@@ -59,34 +58,22 @@ export function DashboardNavbar() {
 
     return (
         <header className="sticky top-0 z-30 flex h-14 w-full shrink-0 items-center justify-between gap-4 border-b border-border bg-card/80 backdrop-blur-md px-5">
-            {/* ── Page Title ── */}
+            {/* ── Left: hamburger (mobile) + page title ── */}
             <div className="flex items-center gap-2 min-w-0">
+                <button
+                    onClick={onMenuClick}
+                    aria-label="Toggle menu"
+                    className="md:hidden flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                >
+                    <Menu className="size-4.5" />
+                </button>
                 <h1 className="text-sm font-semibold text-foreground truncate">{pageTitle}</h1>
             </div>
 
             {/* ── Right controls ── */}
             <div className="flex items-center gap-1.5 shrink-0">
-                {/* Search */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-9 rounded-lg text-muted-foreground hover:text-foreground"
-                    aria-label="Search"
-                >
-                    <Search className="size-4" />
-                </Button>
 
-                {/* Notifications */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative size-9 rounded-lg text-muted-foreground hover:text-foreground"
-                    aria-label="Notifications"
-                >
-                    <Bell className="size-4" />
-                    {/* Unread dot */}
-                    <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
-                </Button>
+
 
                 <ThemeToggle />
 
@@ -119,9 +106,7 @@ export function DashboardNavbar() {
                         <DropdownMenuItem onClick={() => router.push("/dashboard/profile")} className="cursor-pointer">
                             My Profile
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer">
-                            Account Settings
-                        </DropdownMenuItem>
+
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onClick={handleLogout}
