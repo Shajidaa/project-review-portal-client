@@ -60,7 +60,7 @@ export function LoginForm() {
       setSuccessMessage("Signed in successfully! Redirecting...")
 
       setTimeout(() => {
-        router.push("/")
+        router.push("/dashboard")
         router.refresh()
       }, 1000)
     } catch (err: unknown) {
@@ -95,7 +95,7 @@ export function LoginForm() {
           email={email}
           onSuccess={() => {
             setTimeout(() => {
-              router.push("/")
+              router.push("/dashboard")
               router.refresh()
             }, 1000)
           }}

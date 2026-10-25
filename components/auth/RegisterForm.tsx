@@ -77,7 +77,7 @@ export function RegisterForm() {
 
       setSuccessMessage(
         response.message ||
-          "Registration successful! Please check your email for the 6-digit activation code."
+        "Registration successful! Please check your email for the 6-digit activation code."
       )
       setIsOtpStep(true)
     } catch (err: unknown) {
@@ -102,7 +102,7 @@ export function RegisterForm() {
           actionText="Complete Registration"
           onSuccess={() => {
             setTimeout(() => {
-              router.push("/")
+              router.push("/dashboard")
               router.refresh()
             }, 1000)
           }}
