@@ -5,30 +5,34 @@ import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { submissionApi } from "@/lib/submission-api"
 import type { Submission, SubmissionStats } from "@/types/submission"
-import {
-    ArrowRight,
-    CheckCircle2,
-    Clock,
-    ExternalLink,
-    TrendingUp,
-    XCircle,
-} from "lucide-react"
+import { ArrowRight, CheckCircle2, Clock, ExternalLink, TrendingUp, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SubmissionStatusBadge } from "@/components/dashboard/SubmissionStatusBadge"
+import { StatusPieChart } from "./_charts/StatusPieChart"
+import { StackWorkloadChart } from "./_charts/StackWorkloadChart"
+import { MonthlyVolumeChart } from "./_charts/MonthlyVolumeChart"
+import { ApprovalRateBar } from "./_charts/ApprovalRateBar"
+
+const Skeleton = ({ h = "h-[248px]" }: { h?: string }) => (
+    <div className={`${h} rounded-xl border border-border bg-card animate-pulse`} />
+)
 
 export default function MentorDashboardPage() {
     const { user } = useAuth()
     const [stats, setStats] = React.useState<SubmissionStats | null>(null)
+    const [allSubs, setAllSubs] = React.useState<Submission[]>([])
     const [recent, setRecent] = React.useState<Submission[]>([])
     const [loading, setLoading] = React.useState(true)
 
     React.useEffect(() => {
         Promise.all([
             submissionApi.getStats(),
-            submissionApi.getAll({ limit: 5, status: "PENDING" }),
-        ]).then(([statsRes, listRes]) => {
+            submissionApi.getAll({ limit: 100 }),       // for charts
+            submissionApi.getAll({ limit: 5, status: "PENDING" }), // pending queue preview
+        ]).then(([statsRes, allRes, recentRes]) => {
             setStats(statsRes.data)
-            setRecent(listRes.data)
+            setAllSubs(allRes.data)
+            setRecent(recentRes.data)
         }).catch(() => { }).finally(() => setLoading(false))
     }, [])
 
@@ -40,28 +44,32 @@ export default function MentorDashboardPage() {
     ]
 
     return (
-        <div className="max-w-4xl space-y-8">
+        <div className="mx-auto space-y-8">
 
-            {/* Greeting */}
+            {/* ── Greeting ── */}
             <div>
                 <h1 className="text-2xl font-bold text-foreground">
                     Welcome back, {user?.name?.split(" ")[0]} 👋
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                    {stats ? `Approval rate: ${stats.approvalRate}% · ${stats.pending} pending review` : "Loading your stats…"}
+                    {loading
+                        ? "Loading platform stats…"
+                        : `Approval rate: ${stats?.approvalRate ?? 0}% · ${stats?.pending ?? 0} pending review`}
                 </p>
             </div>
 
-            {/* Stat Cards */}
+            {/* ── Stat Cards ── */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {statCards.map(({ label, value, icon: Icon, color, bg }) => (
                     <div key={label} className="rounded-xl border border-border bg-card p-4 space-y-3">
                         <div className={`flex size-9 items-center justify-center rounded-lg ${bg}`}>
-                            <Icon className={`size-4.5 ${color}`} />
+                            <Icon className={`size-4 ${color}`} />
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-foreground">
-                                {loading ? <span className="animate-pulse text-muted-foreground">—</span> : value}
+                                {loading
+                                    ? <span className="inline-block w-6 h-6 rounded bg-muted animate-pulse" />
+                                    : value}
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
                         </div>
@@ -69,7 +77,23 @@ export default function MentorDashboardPage() {
                 ))}
             </div>
 
-            {/* Pending Queue Preview */}
+            {/* ── Row 1: Status Pie + Stack Workload ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {loading ? <Skeleton /> : stats ? <StatusPieChart stats={stats} /> : null}
+                {loading ? <Skeleton /> : <StackWorkloadChart submissions={allSubs} />}
+            </div>
+
+            {/* ── Row 2: Monthly Volume (full width) ── */}
+            {loading
+                ? <Skeleton h="h-[248px]" />
+                : <MonthlyVolumeChart submissions={allSubs} />}
+
+            {/* ── Approval Rate Bar + type breakdown ── */}
+            {loading
+                ? <Skeleton h="h-36" />
+                : stats && <ApprovalRateBar stats={stats} />}
+
+            {/* ── Pending Queue Preview ── */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground">Pending Reviews</h2>
@@ -83,7 +107,7 @@ export default function MentorDashboardPage() {
                 {loading ? (
                     <div className="space-y-2">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-16 rounded-xl border border-border bg-card animate-pulse" />
+                            <div key={i} className="h-14 rounded-xl border border-border bg-card animate-pulse" />
                         ))}
                     </div>
                 ) : recent.length === 0 ? (
@@ -117,22 +141,6 @@ export default function MentorDashboardPage() {
                     </div>
                 )}
             </div>
-
-            {/* By Project Type */}
-            {stats && stats.byProjectType.length > 0 && (
-                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Submissions by Type</p>
-                    <div className="flex gap-4 flex-wrap">
-                        {stats.byProjectType.map(({ type, count }) => (
-                            <div key={type} className="flex items-center gap-2">
-                                <span className="size-2 rounded-full bg-primary/60" />
-                                <span className="text-sm font-medium text-foreground">{count}</span>
-                                <span className="text-xs text-muted-foreground">{type}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     )
 }
