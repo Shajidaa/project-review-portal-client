@@ -9,6 +9,7 @@ import {
   HelpCircle,
   LayoutDashboard,
   PlusCircle,
+  ScrollText,
   ShieldCheck,
   Sparkles,
   TrendingUp,
@@ -117,7 +118,14 @@ export const ROLE_NAVIGATION: Record<ActiveRole, NavItem[]> = {
       href: "/dashboard/admin/users",
       description: "Manage students, mentors, permissions, and roles",
       icon: Users2,
-    },],
+    },
+    {
+      title: "Audit Logs",
+      href: "/dashboard/admin/audit-logs",
+      description: "Track all admin and user actions across the platform",
+      icon: ScrollText,
+    },
+  ],
 }
 
 export interface QuickSearchItem {
