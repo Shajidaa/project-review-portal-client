@@ -41,12 +41,12 @@ export const ROLE_NAVIGATION: Record<ActiveRole, NavItem[]> = {
       description: "Submit your code, get senior feedback, iterate and level up",
       icon: Sparkles,
     },
-    {
-      title: "Review Rubric",
-      href: "/guidelines",
-      description: "Frontend, Backend, and Fullstack architecture benchmarks",
-      icon: BookOpen,
-    },
+    // {
+    //   title: "Review Rubric",
+    //   href: "/guidelines",
+    //   description: "Frontend, Backend, and Fullstack architecture benchmarks",
+    //   icon: BookOpen,
+    // },
     {
       title: "Mentors",
       href: "/mentors",
@@ -66,19 +66,7 @@ export const ROLE_NAVIGATION: Record<ActiveRole, NavItem[]> = {
       href: "/dashboard/student/submissions",
       description: "Track submission status, approvals, and review feedback",
       icon: FolderGit2,
-    },
-    {
-      title: "Guidelines & Rubric",
-      href: "/guidelines",
-      description: "Standards and best practices for project reviews",
-      icon: BookOpen,
-    },
-    {
-      title: "Explore Archive",
-      href: "/explore",
-      description: "See exemplary student projects and mentor reviews",
-      icon: Compass,
-    },
+    }
   ],
   MENTOR: [
     {
@@ -92,13 +80,7 @@ export const ROLE_NAVIGATION: Record<ActiveRole, NavItem[]> = {
       href: "/dashboard/mentor/submissions",
       description: "Submissions awaiting code review and architectural feedback",
       icon: Clock,
-    },
-    {
-      title: "Rubric Guidelines",
-      href: "/guidelines",
-      description: "Standardized grading and feedback guidelines",
-      icon: BookOpen,
-    },
+    }
   ],
   ADMIN: [
     {
@@ -185,14 +167,6 @@ export const SEARCH_INDEX: QuickSearchItem[] = [
     category: "Stacks",
     href: "/explore?stack=Backend",
     icon: FileCode2,
-  },
-  {
-    id: "review-guidelines",
-    title: "Project Review Guidelines",
-    subtitle: "Read code style, architecture, and documentation rubrics",
-    category: "Pages",
-    href: "/guidelines",
-    icon: BookOpen,
   },
   {
     id: "user-management",

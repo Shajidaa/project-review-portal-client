@@ -137,12 +137,12 @@ export function UserMenu() {
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem asChild>
+          {/* <DropdownMenuItem asChild>
             <Link href="/guidelines" className="flex items-center gap-2.5 cursor-pointer">
               <BookOpen className="size-4 text-muted-foreground" />
               <span>Review Rubrics</span>
             </Link>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
 
           <DropdownMenuItem asChild>
             <Link href="/settings" className="flex items-center gap-2.5 cursor-pointer">
