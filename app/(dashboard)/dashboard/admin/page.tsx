@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { submissionApi } from "@/lib/submission-api"
+import { userApi } from "@/lib/user-api"
 import type { Submission, SubmissionStats } from "@/types/submission"
 import {
     ArrowRight,
@@ -13,14 +14,58 @@ import {
     ExternalLink,
     FolderGit2,
     TrendingUp,
+    Users2,
     XCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SubmissionStatusBadge } from "@/components/dashboard/SubmissionStatusBadge"
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Legend,
+} from "recharts"
+
+/* ── Colour tokens that work in both themes ─────────────────────────────── */
+const COLORS = {
+    primary: "hsl(var(--primary))",
+    amber: "#f59e0b",
+    emerald: "#10b981",
+    rose: "#f43f5e",
+    sky: "#0ea5e9",
+    violet: "#8b5cf6",
+}
+
+const STATUS_COLORS: Record<string, string> = {
+    PENDING: COLORS.amber,
+    APPROVED: COLORS.emerald,
+    REJECTED: COLORS.rose,
+}
+
+const TYPE_COLORS = [COLORS.primary, COLORS.sky, COLORS.violet]
+const ROLE_COLORS = [COLORS.sky, COLORS.violet, COLORS.amber]
+
+/* ── Shared tooltip style ───────────────────────────────────────────────── */
+const tooltipStyle = {
+    backgroundColor: "hsl(var(--card))",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: "8px",
+    fontSize: "12px",
+    color: "hsl(var(--foreground))",
+}
+
+interface UserCounts { students: number; mentors: number; admins: number; total: number }
 
 export default function AdminDashboardPage() {
     const { user } = useAuth()
     const [stats, setStats] = React.useState<SubmissionStats | null>(null)
+    const [userCounts, setUserCounts] = React.useState<UserCounts | null>(null)
     const [recent, setRecent] = React.useState<Submission[]>([])
     const [loading, setLoading] = React.useState(true)
 
@@ -28,25 +73,60 @@ export default function AdminDashboardPage() {
         Promise.all([
             submissionApi.getStats(),
             submissionApi.getAll({ limit: 5 }),
-        ]).then(([statsRes, listRes]) => {
+            // fetch role counts in parallel — each returns meta.total
+            userApi.getAll({ limit: 1, role: "STUDENT" }),
+            userApi.getAll({ limit: 1, role: "MENTOR" }),
+            userApi.getAll({ limit: 1, role: "ADMIN" }),
+        ]).then(([statsRes, listRes, stuRes, menRes, admRes]) => {
             setStats(statsRes.data)
             setRecent(listRes.data)
+            const students = stuRes.meta?.total ?? 0
+            const mentors = menRes.meta?.total ?? 0
+            const admins = admRes.meta?.total ?? 0
+            setUserCounts({ students, mentors, admins, total: students + mentors + admins })
         }).catch(() => { }).finally(() => setLoading(false))
     }, [])
 
+    /* ── Derived chart data ────────────────────────────────────────────────── */
+    const statusData = stats
+        ? [
+            { name: "Pending", value: stats.pending },
+            { name: "Approved", value: stats.approved },
+            { name: "Rejected", value: stats.rejected },
+        ]
+        : []
+
+    const typeData = stats?.byProjectType.map(({ type, count }) => ({
+        name: type,
+        count,
+    })) ?? []
+
+    const userRoleData = userCounts
+        ? [
+            { name: "Students", value: userCounts.students },
+            { name: "Mentors", value: userCounts.mentors },
+            { name: "Admins", value: userCounts.admins },
+        ]
+        : []
+
+    /* ── Stat cards ─────────────────────────────────────────────────────────── */
     const statCards = [
         { label: "Total Submissions", value: stats?.total, icon: FolderGit2, color: "text-primary", bg: "bg-primary/10" },
         { label: "Pending", value: stats?.pending, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
         { label: "Approved", value: stats?.approved, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10" },
         { label: "Rejected", value: stats?.rejected, icon: XCircle, color: "text-rose-500", bg: "bg-rose-500/10" },
         { label: "Approval Rate", value: stats ? `${stats.approvalRate}%` : undefined, icon: TrendingUp, color: "text-violet-500", bg: "bg-violet-500/10" },
-        { label: "Project Types", value: stats?.byProjectType.length, icon: BarChart2, color: "text-sky-500", bg: "bg-sky-500/10" },
+        { label: "Total Users", value: userCounts?.total, icon: Users2, color: "text-sky-500", bg: "bg-sky-500/10" },
     ]
+
+    const Skeleton = ({ h = "h-full" }: { h?: string }) => (
+        <div className={`${h} w-full rounded-xl bg-muted/50 animate-pulse`} />
+    )
 
     return (
         <div className="max-w-5xl space-y-8">
 
-            {/* Greeting */}
+            {/* ── Greeting ── */}
             <div>
                 <h1 className="text-2xl font-bold text-foreground">
                     Welcome back, {user?.name?.split(" ")[0]} 👋
@@ -54,7 +134,7 @@ export default function AdminDashboardPage() {
                 <p className="text-sm text-muted-foreground mt-1">Platform overview at a glance.</p>
             </div>
 
-            {/* Stat Cards */}
+            {/* ── Stat Cards ── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 {statCards.map(({ label, value, icon: Icon, color, bg }) => (
                     <div key={label} className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -63,7 +143,9 @@ export default function AdminDashboardPage() {
                         </div>
                         <div>
                             <p className="text-xl font-bold text-foreground">
-                                {loading ? <span className="animate-pulse text-muted-foreground">—</span> : (value ?? 0)}
+                                {loading
+                                    ? <span className="inline-block w-8 h-5 rounded bg-muted animate-pulse" />
+                                    : (value ?? 0)}
                             </p>
                             <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{label}</p>
                         </div>
@@ -71,30 +153,166 @@ export default function AdminDashboardPage() {
                 ))}
             </div>
 
-            {/* By Project Type */}
-            {stats && stats.byProjectType.length > 0 && (
+            {/* ── Charts Row 1: Status Pie + Type Bar ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Submission Status — Pie */}
                 <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Submissions by Project Type</p>
-                    <div className="grid grid-cols-3 gap-4">
-                        {stats.byProjectType.map(({ type, count }) => {
-                            const pct = stats.total > 0 ? Math.round((count / stats.total) * 100) : 0
-                            return (
-                                <div key={type} className="space-y-1.5">
-                                    <div className="flex items-center justify-between text-xs">
-                                        <span className="font-medium text-foreground">{type}</span>
-                                        <span className="text-muted-foreground">{count} ({pct}%)</span>
-                                    </div>
-                                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                                        <div className="h-full rounded-full bg-primary/70" style={{ width: `${pct}%` }} />
-                                    </div>
-                                </div>
-                            )
-                        })}
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">Submission Status</p>
+                        <p className="text-xs text-muted-foreground">Distribution by review outcome</p>
+                    </div>
+                    {loading ? <Skeleton h="h-52" /> : (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <PieChart>
+                                <Pie
+                                    data={statusData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={55}
+                                    outerRadius={80}
+                                    paddingAngle={3}
+                                    dataKey="value"
+                                >
+                                    {statusData.map((entry) => (
+                                        <Cell key={entry.name} fill={STATUS_COLORS[entry.name.toUpperCase()]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip contentStyle={tooltipStyle} />
+                                <Legend
+                                    iconType="circle"
+                                    iconSize={8}
+                                    formatter={(v) => <span className="text-xs text-muted-foreground">{v}</span>}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+
+                {/* Project Type — Bar */}
+                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">Submissions by Type</p>
+                        <p className="text-xs text-muted-foreground">WEB · MOBILE · OTHER</p>
+                    </div>
+                    {loading ? <Skeleton h="h-52" /> : (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={typeData} barSize={36}>
+                                <XAxis dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} width={28} />
+                                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--muted))" }} />
+                                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                                    {typeData.map((_, i) => (
+                                        <Cell key={i} fill={TYPE_COLORS[i % TYPE_COLORS.length]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+            </div>
+
+            {/* ── Charts Row 2: User Role Pie + Approval Rate Bar ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* User Roles — Pie */}
+                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">Users by Role</p>
+                        <p className="text-xs text-muted-foreground">Students · Mentors · Admins</p>
+                    </div>
+                    {loading ? <Skeleton h="h-52" /> : (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <PieChart>
+                                <Pie
+                                    data={userRoleData}
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={80}
+                                    paddingAngle={3}
+                                    dataKey="value"
+                                >
+                                    {userRoleData.map((_, i) => (
+                                        <Cell key={i} fill={ROLE_COLORS[i % ROLE_COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip contentStyle={tooltipStyle} />
+                                <Legend
+                                    iconType="circle"
+                                    iconSize={8}
+                                    formatter={(v) => <span className="text-xs text-muted-foreground">{v}</span>}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+
+                {/* Approval summary — stacked bar */}
+                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">Review Summary</p>
+                        <p className="text-xs text-muted-foreground">Approved vs Rejected vs Pending</p>
+                    </div>
+                    {loading ? <Skeleton h="h-52" /> : (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart
+                                data={[{ name: "Submissions", ...stats }]}
+                                layout="vertical"
+                                barSize={28}
+                            >
+                                <XAxis type="number" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
+                                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--muted))" }} />
+                                <Legend
+                                    iconType="circle"
+                                    iconSize={8}
+                                    formatter={(v) => <span className="text-xs text-muted-foreground capitalize">{v}</span>}
+                                />
+                                <Bar dataKey="approved" name="Approved" stackId="a" fill={COLORS.emerald} radius={[0, 0, 0, 0]} />
+                                <Bar dataKey="rejected" name="Rejected" stackId="a" fill={COLORS.rose} radius={[0, 0, 0, 0]} />
+                                <Bar dataKey="pending" name="Pending" stackId="a" fill={COLORS.amber} radius={[0, 6, 6, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+            </div>
+
+            {/* ── Approval Rate Progress ── */}
+            {stats && !loading && (
+                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-semibold text-foreground">Approval Rate</p>
+                            <p className="text-xs text-muted-foreground">
+                                {stats.approved} approved out of {stats.total} total submissions
+                            </p>
+                        </div>
+                        <span className="text-2xl font-bold text-emerald-500">{stats.approvalRate}%</span>
+                    </div>
+                    <div className="relative h-3 rounded-full bg-muted overflow-hidden">
+                        {/* rejected */}
+                        <div
+                            className="absolute left-0 top-0 h-full bg-rose-500 transition-all duration-700"
+                            style={{ width: `${stats.total > 0 ? Math.round((stats.rejected / stats.total) * 100) : 0}%` }}
+                        />
+                        {/* approved — starts after rejected */}
+                        <div
+                            className="absolute top-0 h-full bg-emerald-500 transition-all duration-700"
+                            style={{
+                                left: `${stats.total > 0 ? Math.round((stats.rejected / stats.total) * 100) : 0}%`,
+                                width: `${stats.approvalRate}%`,
+                            }}
+                        />
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-emerald-500 inline-block" /> Approved ({stats.approved})</span>
+                        <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-rose-500 inline-block" /> Rejected ({stats.rejected})</span>
+                        <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-amber-500 inline-block" /> Pending ({stats.pending})</span>
                     </div>
                 </div>
             )}
 
-            {/* Recent Submissions */}
+            {/* ── Recent Submissions ── */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground">Recent Submissions</h2>
@@ -107,8 +325,8 @@ export default function AdminDashboardPage() {
 
                 {loading ? (
                     <div className="space-y-2">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-16 rounded-xl border border-border bg-card animate-pulse" />
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="h-14 rounded-xl border border-border bg-card animate-pulse" />
                         ))}
                     </div>
                 ) : recent.length === 0 ? (
