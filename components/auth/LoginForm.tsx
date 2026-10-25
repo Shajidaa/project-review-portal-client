@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import {
   AlertCircle,
   ArrowRight,
-  CheckCircle2,
   Eye,
   EyeOff,
   Loader2,
@@ -21,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AuthCardWrapper } from "./AuthCardWrapper"
 import { OtpVerificationForm } from "./OtpVerificationForm"
+import { toast } from "sonner"
 
 export function LoginForm() {
   const router = useRouter()
@@ -31,19 +31,15 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = React.useState(false)
 
   const [isLoading, setIsLoading] = React.useState(false)
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
 
   // Unverified email handling
   const [requiresOtp, setRequiresOtp] = React.useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrorMessage(null)
-    setSuccessMessage(null)
 
     if (!email.trim() || !password) {
-      setErrorMessage("Please enter both email and password")
+      toast.error("Please enter both email and password")
       return
     }
 
@@ -57,7 +53,7 @@ export function LoginForm() {
         await refreshUser()
       }
 
-      setSuccessMessage("Signed in successfully! Redirecting...")
+      toast.success("Signed in successfully! Redirecting…")
 
       setTimeout(() => {
         router.push("/dashboard")
@@ -71,11 +67,9 @@ export function LoginForm() {
         error.message?.toLowerCase().includes("not verified")
       ) {
         setRequiresOtp(true)
-        setErrorMessage(
-          "Your email is not verified yet. A verification code has been dispatched to your inbox."
-        )
+        toast.info("Email not verified. Check your inbox for the verification code.")
       } else {
-        setErrorMessage(error.message || "Failed to sign in. Please verify credentials.")
+        toast.error(error.message || "Failed to sign in. Please verify credentials.")
       }
     } finally {
       setIsLoading(false)
@@ -101,7 +95,7 @@ export function LoginForm() {
           }}
           onBack={() => {
             setRequiresOtp(false)
-            setErrorMessage(null)
+            // setErrorMessage(null)
           }}
         />
       </AuthCardWrapper>
@@ -117,21 +111,6 @@ export function LoginForm() {
       footerLinkHref="/register"
       footerIcon={<Sparkles className="size-3" />}
     >
-      {/* Feedback Alerts */}
-      {errorMessage && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-          <AlertCircle className="size-4 shrink-0 mt-0.5" />
-          <span className="leading-tight">{errorMessage}</span>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400">
-          <CheckCircle2 className="size-4 shrink-0 mt-0.5" />
-          <span className="leading-tight">{successMessage}</span>
-        </div>
-      )}
-
       <form onSubmit={handleLogin} className="space-y-4">
         {/* Email Field */}
         <div className="space-y-1.5">

@@ -3,9 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import {
-  AlertCircle,
   ArrowRight,
-  CheckCircle2,
   Eye,
   EyeOff,
   Loader2,
@@ -21,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { AuthCardWrapper } from "./AuthCardWrapper"
 import { OtpVerificationForm } from "./OtpVerificationForm"
 import { PasswordCriteria } from "./PasswordCriteria"
+import { toast } from "sonner"
 
 export function RegisterForm() {
   const router = useRouter()
@@ -32,8 +31,6 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = React.useState(false)
 
   const [isLoading, setIsLoading] = React.useState(false)
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
 
   // OTP Step
   const [isOtpStep, setIsOtpStep] = React.useState(false)
@@ -46,43 +43,36 @@ export function RegisterForm() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrorMessage(null)
-    setSuccessMessage(null)
 
     if (name.trim().length < 2) {
-      setErrorMessage("Full name must be at least 2 characters")
+      toast.error("Full name must be at least 2 characters")
       return
     }
 
     if (!isPasswordValid) {
-      setErrorMessage(
-        "Password must be at least 8 characters and contain at least one uppercase letter and one number"
-      )
+      toast.error("Password must be at least 8 characters with one uppercase letter and one number")
       return
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage("Passwords do not match")
+      toast.error("Passwords do not match")
       return
     }
 
     setIsLoading(true)
 
     try {
-      const response = await authApi.register({
+      await authApi.register({
         name: name.trim(),
         email: email.trim(),
         password,
       })
 
-      setSuccessMessage(
-        response.message ||
-        "Registration successful! Please check your email for the 6-digit activation code."
-      )
+      toast.success("Account created! Check your email for the verification code.")
       setIsOtpStep(true)
     } catch (err: unknown) {
       const error = err as Error
-      setErrorMessage(error.message || "Failed to create account. Please try again.")
+      toast.error(error.message || "Failed to create account. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -108,7 +98,6 @@ export function RegisterForm() {
           }}
           onBack={() => {
             setIsOtpStep(false)
-            setErrorMessage(null)
           }}
         />
       </AuthCardWrapper>
@@ -124,21 +113,6 @@ export function RegisterForm() {
       footerLinkHref="/login"
       footerIcon={<Sparkles className="size-3" />}
     >
-      {/* Feedback Alerts */}
-      {errorMessage && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-          <AlertCircle className="size-4 shrink-0 mt-0.5" />
-          <span className="leading-tight">{errorMessage}</span>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400">
-          <CheckCircle2 className="size-4 shrink-0 mt-0.5" />
-          <span className="leading-tight">{successMessage}</span>
-        </div>
-      )}
-
       <form onSubmit={handleRegister} className="space-y-3.5">
         {/* Full Name */}
         <div className="space-y-1.5">
