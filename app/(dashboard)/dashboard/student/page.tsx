@@ -1,135 +1,138 @@
 "use client"
 
+import * as React from "react"
+import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
+import { submissionApi } from "@/lib/submission-api"
+import type { Submission } from "@/types/submission"
 import {
-    ArrowRight,
-    BookOpen,
     CheckCircle2,
     Clock,
-    Compass,
     FolderGit2,
     PlusCircle,
-    TrendingUp,
     XCircle,
+    ArrowRight,
+    ExternalLink,
 } from "lucide-react"
-import Link from "next/link"
-
-const stats = [
-    { label: "Total Submissions", value: "4", icon: FolderGit2, color: "text-sky-500", bg: "bg-sky-500/10" },
-    { label: "Under Review", value: "2", icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Approved", value: "1", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Needs Revision", value: "1", icon: XCircle, color: "text-rose-500", bg: "bg-rose-500/10" },
-]
-
-const recentSubmissions = [
-    { name: "E-Commerce Platform", stack: "Fullstack", status: "UNDER_REVIEW", date: "Oct 22, 2026" },
-    { name: "Portfolio Site", stack: "Frontend", status: "APPROVED", date: "Oct 15, 2026" },
-    { name: "REST API Service", stack: "Backend", status: "NEEDS_REVISION", date: "Oct 10, 2026" },
-]
-
-const STATUS_STYLES: Record<string, { label: string; className: string }> = {
-    UNDER_REVIEW: { label: "Under Review", className: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-    APPROVED: { label: "Approved", className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-    NEEDS_REVISION: { label: "Needs Revision", className: "bg-rose-500/10 text-rose-600 dark:text-rose-400" },
-    PENDING: { label: "Pending", className: "bg-sky-500/10 text-sky-600 dark:text-sky-400" },
-}
+import { Button } from "@/components/ui/button"
+import { SubmissionStatusBadge } from "@/components/dashboard/SubmissionStatusBadge"
 
 export default function StudentDashboardPage() {
     const { user } = useAuth()
+    const [submissions, setSubmissions] = React.useState<Submission[]>([])
+    const [loading, setLoading] = React.useState(true)
+
+    const [total, setTotal] = React.useState(0)
+    const [pending, setPending] = React.useState(0)
+    const [approved, setApproved] = React.useState(0)
+    const [rejected, setRejected] = React.useState(0)
+
+    React.useEffect(() => {
+        submissionApi.getMy({ limit: 5 }).then((res) => {
+            const list = res.data
+            setSubmissions(list)
+            setTotal(res.meta?.total ?? list.length)
+            setPending(list.filter((s: Submission) => s.status === "PENDING").length)
+            setApproved(list.filter((s: Submission) => s.status === "APPROVED").length)
+            setRejected(list.filter((s: Submission) => s.status === "REJECTED").length)
+        }).catch(() => { }).finally(() => setLoading(false))
+    }, [])
+
+    const stats = [
+        { label: "Total Submitted", value: total, icon: FolderGit2, color: "text-primary", bg: "bg-primary/10" },
+        { label: "Pending Review", value: pending, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
+        { label: "Approved", value: approved, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+        { label: "Rejected", value: rejected, icon: XCircle, color: "text-rose-500", bg: "bg-rose-500/10" },
+    ]
 
     return (
-        <div className="space-y-8 max-w-5xl">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                    <h1 className="text-2xl font-bold text-foreground tracking-tight">
-                        Welcome back, {user?.name?.split(" ")[0]} 👋
-                    </h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Here's a summary of your project submissions and reviews.
-                    </p>
-                </div>
-                <Link
-                    href="/submissions/new"
-                    className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
-                >
-                    <PlusCircle className="size-4" />
-                    New Submission
-                </Link>
+        <div className="max-w-4xl space-y-8">
+            {/* Greeting */}
+            <div>
+                <h1 className="text-2xl font-bold text-foreground">
+                    Welcome back, {user?.name?.split(" ")[0]} 👋
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Here's a snapshot of your project submissions.
+                </p>
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {stats.map(({ label, value, icon: Icon, color, bg }) => (
-                    <div key={label} className="rounded-xl border border-border bg-card p-5 space-y-3">
+                    <div key={label} className="rounded-xl border border-border bg-card p-4 space-y-3">
                         <div className={`flex size-9 items-center justify-center rounded-lg ${bg}`}>
-                            <Icon className={`size-5 ${color}`} />
+                            <Icon className={`size-4.5 ${color}`} />
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-foreground">{value}</p>
+                            <p className="text-2xl font-bold text-foreground">
+                                {loading ? <span className="animate-pulse">—</span> : value}
+                            </p>
                             <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Recent Submissions */}
-                <div className="lg:col-span-2 rounded-xl border border-border bg-card overflow-hidden">
-                    <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                        <h2 className="text-sm font-semibold text-foreground">Recent Submissions</h2>
-                        <Link href="/submissions/my" className="flex items-center gap-1 text-xs text-primary hover:underline">
-                            View all <ArrowRight className="size-3" />
-                        </Link>
-                    </div>
-                    <div className="divide-y divide-border">
-                        {recentSubmissions.map((sub) => {
-                            const s = STATUS_STYLES[sub.status]
-                            return (
-                                <div key={sub.name} className="flex items-center justify-between gap-4 px-5 py-3.5">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                                            <FolderGit2 className="size-4 text-muted-foreground" />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-medium text-foreground truncate">{sub.name}</p>
-                                            <p className="text-xs text-muted-foreground">{sub.stack} · {sub.date}</p>
-                                        </div>
-                                    </div>
-                                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${s.className}`}>
-                                        {s.label}
-                                    </span>
-                                </div>
-                            )
-                        })}
+            {/* Recent Submissions */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-foreground">Recent Submissions</h2>
+                    <div className="flex items-center gap-2">
+                        <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1.5 cursor-pointer">
+                            <Link href="/dashboard/student/submissions">
+                                View all <ArrowRight className="size-3.5" />
+                            </Link>
+                        </Button>
+                        <Button asChild size="sm" className="h-8 text-xs gap-1.5 cursor-pointer">
+                            <Link href="/dashboard/student/submissions/new">
+                                <PlusCircle className="size-3.5" /> New
+                            </Link>
+                        </Button>
                     </div>
                 </div>
 
-                {/* Quick Links */}
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                    <div className="px-5 py-4 border-b border-border">
-                        <h2 className="text-sm font-semibold text-foreground">Quick Links</h2>
+                {loading ? (
+                    <div className="space-y-2">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="h-16 rounded-xl border border-border bg-card animate-pulse" />
+                        ))}
                     </div>
-                    <div className="p-3 space-y-1">
-                        {[
-                            { title: "Submit New Project", href: "/submissions/new", icon: PlusCircle, color: "text-primary" },
-                            { title: "My Submissions", href: "/submissions/my", icon: FolderGit2, color: "text-sky-500" },
-                            { title: "Review Guidelines", href: "/guidelines", icon: BookOpen, color: "text-emerald-500" },
-                            { title: "Explore Archive", href: "/explore", icon: Compass, color: "text-violet-500" },
-                            { title: "Track Progress", href: "/submissions/stats", icon: TrendingUp, color: "text-amber-500" },
-                        ].map(({ title, href, icon: Icon, color }) => (
+                ) : submissions.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card py-12 text-center">
+                        <FolderGit2 className="size-8 text-muted-foreground mb-3" />
+                        <p className="text-sm font-medium text-foreground">No submissions yet</p>
+                        <p className="text-xs text-muted-foreground mt-1 mb-4">Submit your first project to get a mentor review.</p>
+                        <Button asChild size="sm" className="gap-1.5 cursor-pointer">
+                            <Link href="/dashboard/student/submissions/new">
+                                <PlusCircle className="size-3.5" /> Submit a project
+                            </Link>
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="rounded-xl border border-border bg-card divide-y divide-border overflow-hidden">
+                        {submissions.map((s) => (
                             <Link
-                                key={href}
-                                href={href}
-                                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                key={s.id}
+                                href={`/dashboard/student/submissions/${s.id}`}
+                                className="flex items-center justify-between gap-4 px-4 py-3.5 hover:bg-muted/50 transition-colors group"
                             >
-                                <Icon className={`size-4 shrink-0 ${color}`} />
-                                <span>{title}</span>
-                                <ArrowRight className="size-3.5 ml-auto opacity-40" />
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                                        {s.projectName}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        {s.repoStack} · {s.projectType} · {new Date(s.createdAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <SubmissionStatusBadge status={s.status} />
+                                    <ExternalLink className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
                             </Link>
                         ))}
                     </div>
-                </div>
+                )}
             </div>
         </div>
     )

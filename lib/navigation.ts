@@ -56,17 +56,15 @@ export const ROLE_NAVIGATION: Record<ActiveRole, NavItem[]> = {
   STUDENT: [
     {
       title: "Dashboard",
-      href: "/dashboard",
+      href: "/dashboard/student",
       description: "Overview of your submissions, reviews, and mentor notes",
       icon: LayoutDashboard,
     },
     {
       title: "My Submissions",
-      href: "/submissions/my",
+      href: "/dashboard/student/submissions",
       description: "Track submission status, approvals, and review feedback",
       icon: FolderGit2,
-      badge: "2 Active",
-      badgeVariant: "info",
     },
     {
       title: "Guidelines & Rubric",

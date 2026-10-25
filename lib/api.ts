@@ -6,6 +6,12 @@ export interface ApiResponse<T = unknown> {
   success: boolean
   message: string
   data: T
+  meta?: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
   errorSources?: Array<{ path: string; message: string }>
 }
 
