@@ -81,24 +81,16 @@ export const ROLE_NAVIGATION: Record<ActiveRole, NavItem[]> = {
   ],
   MENTOR: [
     {
+      title: "Dashboard",
+      href: "/dashboard/mentor",
+      description: "Overview of your review activity and pending queue",
+      icon: LayoutDashboard,
+    },
+    {
       title: "Review Queue",
-      href: "/submissions",
+      href: "/dashboard/mentor/submissions",
       description: "Submissions awaiting code review and architectural feedback",
       icon: Clock,
-      badge: "3 Pending",
-      badgeVariant: "warning",
-    },
-    {
-      title: "Review Analytics",
-      href: "/submissions/stats",
-      description: "Turnaround time, approval ratios, and review volume",
-      icon: TrendingUp,
-    },
-    {
-      title: "Reviewed Archive",
-      href: "/submissions/archive",
-      description: "Historical record of past evaluated submissions",
-      icon: CheckCircle2,
     },
     {
       title: "Rubric Guidelines",
@@ -109,28 +101,22 @@ export const ROLE_NAVIGATION: Record<ActiveRole, NavItem[]> = {
   ],
   ADMIN: [
     {
-      title: "Overview",
-      href: "/admin",
+      title: "Dashboard",
+      href: "/dashboard/admin",
       description: "Platform high-level health and activity overview",
       icon: LayoutDashboard,
     },
     {
       title: "All Submissions",
-      href: "/admin/submissions",
+      href: "/dashboard/admin/submissions",
       description: "System-wide view of all student code submissions",
       icon: FolderGit2,
     },
     {
       title: "User Management",
-      href: "/admin/users",
+      href: "/dashboard/admin/users",
       description: "Manage students, mentors, permissions, and roles",
       icon: Users2,
-    },
-    {
-      title: "Platform Stats",
-      href: "/admin/stats",
-      description: "Detailed system telemetry and submission throughput",
-      icon: TrendingUp,
     },
   ],
 }

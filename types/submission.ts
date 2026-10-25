@@ -50,6 +50,20 @@ export interface CreateSubmissionPayload {
     projectImage?: string
 }
 
+export interface ReviewSubmissionPayload {
+    reviewStatus: "APPROVED" | "REJECTED"
+    reviewComments?: string
+}
+
+export interface SubmissionStats {
+    total: number
+    pending: number
+    approved: number
+    rejected: number
+    approvalRate: number
+    byProjectType: { type: ProjectType; count: number }[]
+}
+
 export interface SubmissionQuery {
     page?: number
     limit?: number

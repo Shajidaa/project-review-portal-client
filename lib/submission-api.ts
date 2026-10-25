@@ -1,8 +1,10 @@
 import { apiRequest } from "./api"
 import type {
     CreateSubmissionPayload,
+    ReviewSubmissionPayload,
     Submission,
     SubmissionQuery,
+    SubmissionStats,
 } from "@/types/submission"
 
 function buildQuery(params: SubmissionQuery): string {
@@ -17,7 +19,7 @@ function buildQuery(params: SubmissionQuery): string {
 }
 
 export const submissionApi = {
-    // Student
+    // ── Student ──────────────────────────────────────────────────────────────
     create: (payload: CreateSubmissionPayload) =>
         apiRequest<Submission>("/submissions", {
             method: "POST",
@@ -32,4 +34,20 @@ export const submissionApi = {
 
     deleteMy: (id: string) =>
         apiRequest<null>(`/submissions/my/${id}`, { method: "DELETE" }),
+
+    // ── Mentor / Admin ────────────────────────────────────────────────────────
+    getAll: (query: SubmissionQuery = {}) =>
+        apiRequest<Submission[]>(`/submissions${buildQuery(query)}`),
+
+    getById: (id: string) =>
+        apiRequest<Submission>(`/submissions/${id}`),
+
+    review: (id: string, payload: ReviewSubmissionPayload) =>
+        apiRequest<Submission>(`/submissions/${id}/review`, {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+        }),
+
+    getStats: () =>
+        apiRequest<SubmissionStats>("/submissions/stats"),
 }
