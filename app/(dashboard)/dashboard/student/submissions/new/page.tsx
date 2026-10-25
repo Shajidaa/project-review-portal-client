@@ -63,7 +63,7 @@ export default function NewSubmissionPage() {
     }
 
     return (
-        <div className="max-w-2xl space-y-6">
+        <div className="mx-auto space-y-6">
             {/* Back + Header */}
             <div className="space-y-1">
                 <Link

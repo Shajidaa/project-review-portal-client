@@ -116,7 +116,7 @@ export default function AdminUserDetailPage() {
     const isSelf = me?.id === user.id
 
     return (
-        <div className="max-w-2xl space-y-6">
+        <div className="mx-auto space-y-6">
 
             {/* Back */}
             <Link href="/dashboard/admin/users" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -172,10 +172,10 @@ export default function AdminUserDetailPage() {
                                     type="button"
                                     onClick={() => setNewRole(r)}
                                     className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${newRole === r
-                                            ? r === "STUDENT" ? "border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400"
-                                                : r === "MENTOR" ? "border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400"
-                                                    : "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                                            : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                                        ? r === "STUDENT" ? "border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                                            : r === "MENTOR" ? "border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                                : "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                        : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
                                         }`}
                                 >
                                     {r.charAt(0) + r.slice(1).toLowerCase()}

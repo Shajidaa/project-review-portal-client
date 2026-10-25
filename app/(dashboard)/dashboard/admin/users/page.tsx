@@ -77,7 +77,7 @@ export default function AdminUsersPage() {
     const hasFilters = search || role
 
     return (
-        <div className="max-w-5xl space-y-6">
+        <div className="mx-auto space-y-6">
 
             {/* Header */}
             <div>
