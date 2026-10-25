@@ -133,7 +133,7 @@ export default function StudentDashboardPage() {
             {/* ── Greeting ── */}
             <div>
                 <h1 className="text-2xl font-bold text-foreground">
-                    Welcome back, {user?.name?.split(" ")[0]} 👋
+                    Welcome back, {user?.name?.split(" ")[0]}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
                     {loading ? "Loading your stats…" : total === 0

@@ -1,5 +1,5 @@
 import { apiRequest } from "./api"
-import type { User, UserQuery, UpdateRolePayload } from "@/types/user"
+import type { User, UserQuery, UpdateRolePayload, UpdateProfilePayload } from "@/types/user"
 
 function buildQuery(params: UserQuery): string {
     const q = new URLSearchParams()
@@ -12,6 +12,17 @@ function buildQuery(params: UserQuery): string {
 }
 
 export const userApi = {
+    // ── Own profile ───────────────────────────────────────────────────────────
+    getMe: () =>
+        apiRequest<User>("/users/me"),
+
+    updateMe: (payload: UpdateProfilePayload) =>
+        apiRequest<User>("/users/me", {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+        }),
+
+    // ── Admin ─────────────────────────────────────────────────────────────────
     getAll: (query: UserQuery = {}) =>
         apiRequest<User[]>(`/users${buildQuery(query)}`),
 

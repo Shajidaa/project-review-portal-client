@@ -25,3 +25,9 @@ export interface UserQuery {
 export interface UpdateRolePayload {
     role: UserRole
 }
+
+export interface UpdateProfilePayload {
+    name?: string
+    gender?: Gender
+    avatarUrl?: string
+}

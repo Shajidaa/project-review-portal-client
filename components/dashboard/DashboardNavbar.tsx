@@ -39,12 +39,15 @@ export function DashboardNavbar() {
 
     if (!user) return null
 
-    // Derive page title from nav config
+    // Derive page title from nav config + shared routes
     const navItems = ROLE_NAVIGATION[user.role] ?? []
     const currentNav = navItems.find(
         (item) => pathname === item.href || pathname.startsWith(item.href + "/")
     )
-    const pageTitle = currentNav?.title ?? "Dashboard"
+    const SHARED_TITLES: Record<string, string> = {
+        "/dashboard/profile": "My Profile",
+    }
+    const pageTitle = currentNav?.title ?? SHARED_TITLES[pathname] ?? "Dashboard"
 
     const getInitials = (name: string) =>
         name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
@@ -113,7 +116,7 @@ export function DashboardNavbar() {
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
+                        <DropdownMenuItem onClick={() => router.push("/dashboard/profile")} className="cursor-pointer">
                             My Profile
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer">

@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronLeft, ChevronRight, Code2, LogOut } from "lucide-react"
+import { ChevronLeft, ChevronRight, Code2, LogOut, User as UserIcon } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { ROLE_NAVIGATION } from "@/lib/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -126,10 +126,18 @@ export function DashboardSidebar() {
             {/* ── User Footer ── */}
             <div className={cn(
                 "shrink-0 border-t border-border p-3",
-                collapsed ? "flex flex-col items-center gap-2" : "space-y-3"
+                collapsed ? "flex flex-col items-center gap-2" : "space-y-1"
             )}>
-                {/* User info */}
-                <div className={cn("flex items-center gap-2.5 min-w-0", collapsed && "justify-center")}>
+                {/* Clickable user row → profile page */}
+                <Link
+                    href="/dashboard/profile"
+                    title={collapsed ? "My Profile" : undefined}
+                    className={cn(
+                        "flex items-center gap-2.5 min-w-0 rounded-lg px-2 py-2 hover:bg-muted transition-colors",
+                        collapsed && "justify-center px-0",
+                        pathname === "/dashboard/profile" && "bg-primary/10"
+                    )}
+                >
                     <div className="relative shrink-0">
                         <Avatar className="size-8">
                             {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.name} />}
@@ -148,7 +156,11 @@ export function DashboardSidebar() {
                             </p>
                         </div>
                     )}
-                </div>
+
+                    {!collapsed && (
+                        <UserIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                    )}
+                </Link>
 
                 {/* Logout button */}
                 <button
