@@ -124,7 +124,7 @@ export default function AdminDashboardPage() {
     )
 
     return (
-        <div className="max-w-5xl space-y-8">
+        <div className="mx-auto space-y-8">
 
             {/* ── Greeting ── */}
             <div>
@@ -154,7 +154,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* ── Charts Row 1: Status Pie + Type Bar ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                 {/* Submission Status — Pie */}
                 <div className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -210,11 +210,6 @@ export default function AdminDashboardPage() {
                         </ResponsiveContainer>
                     )}
                 </div>
-            </div>
-
-            {/* ── Charts Row 2: User Role Pie + Approval Rate Bar ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 {/* User Roles — Pie */}
                 <div className="rounded-xl border border-border bg-card p-4 space-y-3">
                     <div>
@@ -276,6 +271,8 @@ export default function AdminDashboardPage() {
                     )}
                 </div>
             </div>
+
+
 
             {/* ── Approval Rate Progress ── */}
             {stats && !loading && (
