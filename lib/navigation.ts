@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Users2,
 } from "lucide-react"
-// import { ActiveRole } from "@/contexts/auth-context"
+import { ActiveRole } from "@/types/auth"
 
 export interface NavItem {
   title: string

@@ -3,21 +3,11 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  FolderGit2,
-  GraduationCap,
-  LogIn,
-  LogOut,
-  Menu,
-  PlusCircle,
-  Sparkles,
-  X,
-} from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { ROLE_NAVIGATION } from "@/lib/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import { ThemeToggle } from "./ThemeToggle"
 import { cn } from "@/lib/utils"

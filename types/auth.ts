@@ -1,4 +1,5 @@
 export type UserRole = "STUDENT" | "MENTOR" | "ADMIN"
+export type ActiveRole = UserRole | "GUEST"
 
 export interface UserProfile {
   id: string
@@ -9,4 +10,3 @@ export interface UserProfile {
   emailVerified: boolean
   gender?: "MALE" | "FEMALE" | null
 }
-
