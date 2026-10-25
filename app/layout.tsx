@@ -1,7 +1,7 @@
 import { Geist_Mono, Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-
+import { AuthProvider } from "@/contexts/auth-context"
 import { Navbar } from "@/components/navbar"
 import { cn } from "@/lib/utils"
 
@@ -25,9 +25,10 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-background text-foreground flex flex-col font-sans">
         <ThemeProvider>
-
-          <Navbar />
-          <main className="flex-1 w-full">{children}</main>
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-1 w-full">{children}</main>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

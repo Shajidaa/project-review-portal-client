@@ -6,10 +6,13 @@ import { Code2, LogIn, UserPlus } from "lucide-react"
 import MyContainer from "@/components/shared/myContainer"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "./ThemeToggle"
+import { UserMenu } from "./UserMenu"
+import { useAuth } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false)
+  const { user, isLoading } = useAuth()
 
   // Track scroll state for elevation and blur
   React.useEffect(() => {
@@ -59,32 +62,40 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* ── Right Actions: Theme Toggle, Sign In, Sign Up ── */}
+          {/* ── Right Actions ── */}
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
 
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="text-xs sm:text-sm font-medium hover:text-primary transition-colors cursor-pointer"
-            >
-              <Link href="/login" className="flex items-center gap-1.5">
-                <LogIn className="size-4" />
-                <span>Sign In</span>
-              </Link>
-            </Button>
+            {!isLoading && (
+              user ? (
+                <UserMenu />
+              ) : (
+                <>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs sm:text-sm font-medium hover:text-primary transition-colors cursor-pointer"
+                  >
+                    <Link href="/login" className="flex items-center gap-1.5">
+                      <LogIn className="size-4" />
+                      <span>Sign In</span>
+                    </Link>
+                  </Button>
 
-            <Button
-              asChild
-              size="sm"
-              className="text-xs sm:text-sm font-medium gap-1.5 shadow-sm shadow-primary/25 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 active:scale-95 cursor-pointer"
-            >
-              <Link href="/register" className="flex items-center gap-1.5">
-                <UserPlus className="size-4" />
-                <span>Sign Up</span>
-              </Link>
-            </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="text-xs sm:text-sm font-medium gap-1.5 shadow-sm shadow-primary/25 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 active:scale-95 cursor-pointer"
+                  >
+                    <Link href="/register" className="flex items-center gap-1.5">
+                      <UserPlus className="size-4" />
+                      <span>Sign Up</span>
+                    </Link>
+                  </Button>
+                </>
+              )
+            )}
           </div>
         </div>
       </MyContainer>

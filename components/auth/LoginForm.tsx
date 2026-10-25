@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import { authApi, setAccessToken } from "@/lib/api"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,6 +24,7 @@ import { OtpVerificationForm } from "./OtpVerificationForm"
 
 export function LoginForm() {
   const router = useRouter()
+  const { refreshUser } = useAuth()
 
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -52,6 +54,7 @@ export function LoginForm() {
 
       if (response.data?.accessToken) {
         setAccessToken(response.data.accessToken)
+        await refreshUser()
       }
 
       setSuccessMessage("Signed in successfully! Redirecting...")
